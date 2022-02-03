@@ -1,0 +1,214 @@
+Forecasting
+Forecasting is the ability to project a possible future, by looking at historical data. The data vault enables these
+types of investigations, owing to the complete history it collects as it processes the source’s systems data. A data
+scientist supply answers to such questions as the following:
+• What should we buy?
+• What should we sell?
+• Where will our next business come from?
+People want to know what you calculate to determine what is about to happen.
+Open a new file in your Python editor and save it as Process-Shares-Data.py in directory
+C: \VKHCG\04-Clark\03-Process. I will guide you through this
+process. You will require a library called quandl
+type pip install quandl in cmd
+################################################################
+import sys
+import os
+import sqlite3 as sq
+import quandl
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+Company='04-Clark'
+sInputFileName='00-RawData/VKHCG_Shares.csv'
+sOutputFileName='Shares.csv'
+################################################################
+sDataBaseDir=Base + '/' + Company + '/03-Process/SQLite'
+if not os.path.exists(sDataBaseDir):
+ os.makedirs(sDataBaseDir)
+################################################################
+sFileDir1=Base + '/' + Company + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir1):
+ os.makedirs(sFileDir1)
+################################################################
+sFileDir2=Base + '/' + Company + '/02-Assess/01-EDS/02-Python'
+if not os.path.exists(sFileDir2):
+ os.makedirs(sFileDir2)
+################################################################
+sFileDir3=Base + '/' + Company + '/03-Process/01-EDS/02-Python'
+if not os.path.exists(sFileDir3):
+ os.makedirs(sFileDir3)
+################################################################
+sDatabaseName=sDataBaseDir + '/clark.db'
+conn = sq.connect(sDatabaseName)
+################################################################
+### Import Share Names Data
+PSIT1P2 ~~~~~ Data Science Practical
+M. Sc. [Information Technology ] SEMESTER ~ I Teacher’s Reference Manual
+147
+################################################################
+sFileName=Base + '/' + Company + '/' + sInputFileName
+print('################################')
+print('Loading :',sFileName)
+print('################################')
+RawData=pd.read_csv(sFileName,header=0,low_memory=False, encoding="latin-1")
+RawData.drop_duplicates(subset=None, keep='first', inplace=True)
+print('Rows :',RawData.shape[0])
+print('Columns:',RawData.shape[1])
+print('################')
+################################################################
+sFileName=sFileDir1 + '/Retrieve_' + sOutputFileName
+print('################################')
+print('Storing :', sFileName)
+print('################################')
+RawData.to_csv(sFileName, index = False)
+print('################################')
+################################################################
+sFileName=sFileDir2 + '/Assess_' + sOutputFileName
+print('################################')
+print('Storing :', sFileName)
+print('################################')
+RawData.to_csv(sFileName, index = False)
+print('################################')
+################################################################
+sFileName=sFileDir3 + '/Process_' + sOutputFileName
+print('################################')
+print('Storing :', sFileName)
+print('################################')
+RawData.to_csv(sFileName, index = False)
+print('################################')
+################################################################
+### Import Shares Data Details
+nShares=RawData.shape[0]
+#nShares=6
+for sShare in range(nShares):
+ sShareName=str(RawData['Shares'][sShare])
+ ShareData = quandl.get(sShareName)
+ UnitsOwn=RawData['Units'][sShare]
+ ShareData['UnitsOwn']=ShareData.apply(lambda row:(UnitsOwn),axis=1)
+ ShareData['ShareCode']=ShareData.apply(lambda row:(sShareName),axis=1)
+ print('################')
+ print('Share :',sShareName)
+ print('Rows :',ShareData.shape[0])
+ print('Columns:',ShareData.shape[1])
+ print('################')
+ #################################################################
+ print('################')
+PSIT1P2 ~~~~~ Data Science Practical
+M. Sc. [Information Technology ] SEMESTER ~ I Teacher’s Reference Manual
+148
+ sTable=str(RawData['sTable'][sShare])
+ print('Storing :',sDatabaseName,' Table:',sTable)
+ ShareData.to_sql(sTable, conn, if_exists="replace")
+ print('################')
+ ################################################################
+ sOutputFileName = sTable.replace("/","-") + '.csv'
+ sFileName=sFileDir1 + '/Retrieve_' + sOutputFileName
+ print('################################')
+ print('Storing :', sFileName)
+ print('################################')
+ ShareData.to_csv(sFileName, index = False)
+ print('################################')
+ ################################################################
+ sOutputFileName = sTable.replace("/","-") + '.csv'
+ sFileName=sFileDir2 + '/Assess_' + sOutputFileName
+ print('################################')
+ print('Storing :', sFileName)
+ print('################################')
+ ShareData.to_csv(sFileName, index = False)
+ print('################################')
+ ################################################################
+ sOutputFileName = sTable.replace("/","-") + '.csv'
+ sFileName=sFileDir3 + '/Process_' + sOutputFileName
+ print('################################')
+ print('Storing :', sFileName)
+ print('################################')
+ ShareData.to_csv(sFileName, index = False)
+ print('################################')
+print('### Done!! ############################################')
+################################################################
+Output:
+======== RESTART: C:\VKHCG\04-Clark\03-Process\Process-Shares-Data.py ========
+Working Base : C:/VKHCG using win32
+Loading : C:/VKHCG/04-Clark/00-RawData/VKHCG_Shares.csv
+Rows : 10
+Columns: 3
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_Shares.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_Shares.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_Shares.csv
+Share : WIKI/GOOGL
+Rows : 3424
+Columns: 14
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: WIKI_Google
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_WIKI_Google.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_WIKI_Google.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_WIKI_Google.csv
+Share : WIKI/MSFT
+Rows : 8076
+Columns: 14
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: WIKI_Microsoft
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_WIKI_Microsoft.csv
+PSIT1P2 ~~~~~ Data Science Practical
+M. Sc. [Information Technology ] SEMESTER ~ I Teacher’s Reference Manual
+149
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_WIKI_Microsoft.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_WIKI_Microsoft.csv
+Share : WIKI/UPS
+Rows : 4622
+Columns: 14
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: WIKI_UPS
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_WIKI_UPS.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_WIKI_UPS.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_WIKI_UPS.csv
+Share : WIKI/AMZN
+Rows : 5248
+Columns: 14
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: WIKI_Amazon
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_WIKI_Amazon.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_WIKI_Amazon.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_WIKI_Amazon.csv
+Share : LOCALBTC/USD
+Rows : 1863
+Columns: 6
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: LOCALBTC_USD
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_LOCALBTC_USD.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_LOCALBTC_USD.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_LOCALBTC_USD.csv
+Share : PERTH/AUD_USD_M
+Rows : 340
+Columns: 8
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: PERTH_AUD_USD_M
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_PERTH_AUD_USD_M.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_PERTH_AUD_USD_M.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_PERTH_AUD_USD_M.csv
+Share : PERTH/AUD_USD_D
+Rows : 7989
+Columns: 8
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: PERTH_AUD_USD_D
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_PERTH_AUD_USD_D.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_PERTH_AUD_USD_D.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_PERTH_AUD_USD_D.csv
+Share : FRED/GDP
+Rows : 290
+Columns: 3
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: FRED/GDP
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_FRED-GDP.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_FRED-GDP.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_FRED-GDP.csv
+Share : FED/RXI_US_N_A_UK
+Rows : 49
+Columns: 3
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: FED_RXI_US_N_A_UK
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_FED_RXI_US_N_A_UK.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_FED_RXI_US_N_A_UK.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_FED_RXI_US_N_A_UK.csv
+Share : FED/RXI_N_A_CA
+Rows : 49
+Columns: 3
+Storing : C:/VKHCG/04-Clark/03-Process/SQLite/clark.db Table: FED_RXI_N_A_CA
+Storing : C:/VKHCG/04-Clark/01-Retrieve/01-EDS/02-Python/Retrieve_FED_RXI_N_A_CA.csv
+Storing : C:/VKHCG/04-Clark/02-Assess/01-EDS/02-Python/Assess_FED_RXI_N_A_CA.csv
+Storing : C:/VKHCG/04-Clark/03-Process/01-EDS/02-Python/Process_FED_RXI_N_A_CA.csv
